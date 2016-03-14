@@ -1,0 +1,40 @@
+#!/bin/bash 
+
+cur_dir=$PWD
+
+create_cscope_db()
+{
+    find . -name "*.c" -o -name "*.cpp" -o -name ".cc" -o -name "*.h" > cscope.files
+    cscope -bkq -i cscope.files  
+}
+
+create_ctags_db()
+{
+    ctags -R --c++-kinds=+p --fields=+iaS --extra=+q . 
+}
+
+if [ $# -eq 1 -a "$1" = "-r" ]
+then
+    rm -f cscope.*
+    rm -f tags
+    exit 0
+fi
+
+if [ -f Makefile -o -f makefile ]
+then
+    make cscope
+    if [ "$?" -ne "0" ]
+    then
+        create_cscope_db
+    fi
+
+    make ctags
+    if [ "$?" -ne "0" ]
+    then
+        create_ctags_db
+    fi
+else
+    create_cscope_db
+    create_ctags_db
+fi
+
